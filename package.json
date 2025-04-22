@@ -1,0 +1,13 @@
+{
+  "name": "solana-tee",
+  "version": "1.0.0",
+  "description": "Telegram Trading Bot and Mini App for Solana trading",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
