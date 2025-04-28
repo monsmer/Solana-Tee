@@ -1,22 +1,37 @@
 // bot/bot.js
-
-// Import the Telegram Bot API
 const TelegramBot = require('node-telegram-bot-api');
+const fs = require('fs');
 require('dotenv').config();
 
-// Replace 'YOUR_BOT_TOKEN' with your actual bot token
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: true });
 
-// Command handlers (import them)
-const balanceCommand = require('./commands/balance');
-const marketOrderCommand = require('./commands/market_order');
+// Load commands
+const commands = {};
+const commandFiles = fs.readdirSync('./bot/commands').filter(file => file.endsWith('.js'));
 
-// Set up command handlers
-bot.onText(//balance/, (msg) => balanceCommand.execute(bot, msg));
-bot.onText(//market_order (.+)/, (msg, match) => marketOrderCommand.execute(bot, msg, match));
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  commands[command.name] = command;
+}
 
-// Start listening for messages
-console.log('Bot started...');
+bot.on('message', (msg) => {
+  const text = msg.text;
+  const chatId = msg.chat.id;
+
+  if (!text) return;
+
+  if (text.startsWith('/')) {
+    const commandName = text.slice(1).split(' ')[0];
+    const args = text.slice(1).split(' ').slice(1);
+
+    if (commands[commandName]) {
+      commands[commandName].execute(msg, args);
+    } else {
+      bot.sendMessage(chatId, 'Unknown command.');
+    }
+  }
+});
+
+console.log('Bot is running...');
