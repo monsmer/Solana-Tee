@@ -1,37 +1,26 @@
 // bot/bot.js
-const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs');
-require('dotenv').config();
+const { Telegraf } = require('telegraf');
+require('dotenv').config({ path: './config/.env' });
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const marketOrderCommand = require('./commands/market_order');
+const balanceCommand = require('./commands/balance');
+const sellOrderCommand = require('./commands/sell_order');
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-// Load commands
-const commands = {};
-const commandFiles = fs.readdirSync('./bot/commands').filter(file => file.endsWith('.js'));
+bot.start((ctx) => ctx.reply('Welcome to the Solana Trading Bot!'));
 
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  commands[command.name] = command;
-}
+// Register commands
+bot.command(marketOrderCommand.name, (ctx) => marketOrderCommand.execute(ctx));
+bot.command(balanceCommand.name, (ctx) => balanceCommand.execute(ctx));
+bot.command(sellOrderCommand.name, (ctx) => sellOrderCommand.execute(ctx));
 
-bot.on('message', (msg) => {
-  const text = msg.text;
-  const chatId = msg.chat.id;
-
-  if (!text) return;
-
-  if (text.startsWith('/')) {
-    const commandName = text.slice(1).split(' ')[0];
-    const args = text.slice(1).split(' ').slice(1);
-
-    if (commands[commandName]) {
-      commands[commandName].execute(msg, args);
-    } else {
-      bot.sendMessage(chatId, 'Unknown command.');
-    }
-  }
+bot.help((ctx) => {
+  ctx.reply('Available commands:\n/buy <symbol> <quantity> - Place a market buy order\n/balance - Check your balance\n/sell <symbol> <quantity> - Place a market sell order');
 });
 
-console.log('Bot is running...');
+bot.launch();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
