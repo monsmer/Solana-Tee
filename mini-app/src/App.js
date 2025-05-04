@@ -1,18 +1,21 @@
-import React from 'react';
-import { WalletConnect, WalletConnectionProvider } from './components/WalletConnect';
+import React, { useState } from 'react';
+import WalletConnect from './components/WalletConnect';
 import BalanceDisplay from './components/BalanceDisplay';
-import OrderHistory from './components/OrderHistory';
-const App = () => {
+
+function App() {
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  const handleWalletConnect = (address) => {
+    setWalletAddress(address);
+  };
+
   return (
-    <WalletConnectionProvider>
-      <div>
-        <h1>Solana Trading Mini App</h1>
-        <WalletConnect />
-        <BalanceDisplay />
-        <OrderHistory />
-      </div>
-    </WalletConnectionProvider>
+    <div className="App">
+      <h1>Solana Trading Mini App</h1>
+      <WalletConnect onConnect={handleWalletConnect} />
+      {walletAddress && <BalanceDisplay walletAddress={walletAddress} />}
+    </div>
   );
-};
+}
 
 export default App;
