@@ -1,76 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
-import { useWallet, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { PhantomWalletAdapter, SlopeWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
-import { useMemo } from 'react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
-require('@solana/wallet-adapter-react-ui/styles.css');
+const walletSchema = yup.object().shape({
+  walletAddress: yup.string().required('Wallet address is required').matches(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'Invalid Solana wallet address'),
+});
 
-const WalletConnect = () => {
-  const [publicKey, setPublicKey] = useState(null);
-  const wallet = useWallet();
+function WalletConnect() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(walletSchema)
+  });
+  const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    if (wallet.publicKey) {
-      setPublicKey(wallet.publicKey.toBase58());
-    }
-  }, [wallet.publicKey]);
-
-  const connectWallet = async () => {
-    try {
-      await wallet.connect();
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    }
-  };
-
-  const disconnectWallet = async () => {
-    try {
-      await wallet.disconnect();
-      setPublicKey(null);
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-    }
+  const onSubmit = (data) => {
+    console.log('Wallet Address:', data.walletAddress);
+    // Simulate connection
+    setIsConnected(true);
   };
 
   return (
     <div>
-      {publicKey ? (
-        <div>
-          <p>Connected Wallet: {publicKey}</p>
-          <button onClick={disconnectWallet}>Disconnect Wallet</button>
-        </div>
+      {!isConnected ? (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <label>
+            Wallet Address:
+            <input type="text" {...register('walletAddress')} />
+          </label>
+          <p>{errors.walletAddress?.message}</p>
+          <button type="submit">Connect</button>
+        </form>
       ) : (
-        <button onClick={connectWallet}>Connect Wallet</button>
+        <p>Connected!</p>
       )}
     </div>
   );
-};
+}
 
-const WalletConnectionProvider = ({ children }) => {
-  // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Devnet;
-
-  // You can also provide a custom endpoint instead
-  const endpoint = useMemo(() => `https://api.devnet.solana.com`, []);
-
-  // @solana/wallet-adapter-wallets includes all the adapters but supports tree shaking --
-  // Only the wallets you configure here will be compiled into your application
-  const wallets = useMemo(() => [
-    new PhantomWalletAdapter(),
-    new SlopeWalletAdapter(),
-    new SolflareWalletAdapter()
-  ], []);
-
-  return (
-    <WalletProvider wallets={wallets} autoConnect={true}>
-      <WalletModalProvider>
-        {children}
-      </WalletModalProvider>
-    </WalletProvider>
-  );
-};
-
-export { WalletConnect, WalletConnectionProvider };
+export default WalletConnect;

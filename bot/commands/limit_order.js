@@ -4,47 +4,46 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('limit_order')
-    .setDescription('Places a limit order for a given trading pair.')
+    .setDescription('Places a limit order for Solana tokens.')
     .addStringOption(option =>
-      option.setName('pair')
-        .setDescription('The trading pair (e.g., SOL/USDC)')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('side')
-        .setDescription('Buy or Sell')
+      option.setName('token_pair')
+        .setDescription('The token pair to trade (e.g., SOL/USDC)')
         .setRequired(true)
-        .addChoices(
-          { name: 'Buy', value: 'buy' },
-          { name: 'Sell', value: 'sell' },
-        ))
+    )
+    .addNumberOption(option =>
+      option.setName('amount')
+        .setDescription('The amount of tokens to buy/sell')
+        .setRequired(true)
+    )
     .addNumberOption(option =>
       option.setName('price')
-        .setDescription('The limit price')
-        .setRequired(true))
-    .addNumberOption(option =>
-      option.setName('quantity')
-        .setDescription('The quantity to trade')
-        .setRequired(true)),
+        .setDescription('The limit price for the order')
+        .setRequired(true)
+    ),
   async execute(interaction) {
-    const pair = interaction.options.getString('pair');
-    const side = interaction.options.getString('side');
+    const tokenPair = interaction.options.getString('token_pair');
+    const amount = interaction.options.getNumber('amount');
     const price = interaction.options.getNumber('price');
-    const quantity = interaction.options.getNumber('quantity');
 
-    try {
-      // TODO: Implement the logic to place the limit order on the Solana blockchain.
-      // This will involve:
-      // 1. Connecting to the Solana cluster.
-      // 2. Authenticating the user's wallet.
-      // 3. Creating a transaction to place the limit order.
-      // 4. Sending the transaction to the Solana cluster.
-      // 5. Handling errors and providing feedback to the user.
-
-      // Placeholder response:
-      await interaction.reply(`Limit order placed: ${side} ${quantity} of ${pair} at ${price}. (Implementation pending)`);
-    } catch (error) {
-      console.error('Error placing limit order:', error);
-      await interaction.reply('Failed to place limit order. Please try again.');
+    // Validate token pair (basic check)
+    if (!tokenPair.includes('/')) {
+      await interaction.reply({ content: 'Invalid token pair format. Use format SOL/USDC.', ephemeral: true });
+      return;
     }
+
+    // Validate amount
+    if (amount <= 0) {
+      await interaction.reply({ content: 'Amount must be greater than 0.', ephemeral: true });
+      return;
+    }
+
+    // Validate price
+    if (price <= 0) {
+      await interaction.reply({ content: 'Price must be greater than 0.', ephemeral: true });
+      return;
+    }
+
+    // Placeholder for limit order placement logic (using validated inputs)
+    await interaction.reply(`Placing limit order for ${amount} ${tokenPair} at price ${price}.`);
   },
 };
