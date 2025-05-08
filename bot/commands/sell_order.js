@@ -1,31 +1,37 @@
 // bot/commands/sell_order.js
-const { Telegraf } = require('telegraf');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  name: 'sell',
-  description: 'Execute a market sell order.',
-  execute: async (ctx) => {
-    const args = ctx.message.text.split(' ');
-    if (args.length !== 3) {
-      return ctx.reply('Usage: /sell <symbol> <quantity>');
+  data: new SlashCommandBuilder()
+    .setName('sell_order')
+    .setDescription('Places a sell order for Solana tokens.')
+    .addStringOption(option =>
+      option.setName('token_pair')
+        .setDescription('The token pair to sell (e.g., SOL/USDC)')
+        .setRequired(true)
+    )
+    .addNumberOption(option =>
+      option.setName('amount')
+        .setDescription('The amount of tokens to sell')
+        .setRequired(true)
+    ),
+  async execute(interaction) {
+    const tokenPair = interaction.options.getString('token_pair');
+    const amount = interaction.options.getNumber('amount');
+
+    // Validate token pair (basic check)
+    if (!tokenPair.includes('/')) {
+      await interaction.reply({ content: 'Invalid token pair format. Use format SOL/USDC.', ephemeral: true });
+      return;
     }
 
-    const symbol = args[1].toUpperCase();
-    const quantity = parseFloat(args[2]);
-
-    if (isNaN(quantity) || quantity <= 0) {
-      return ctx.reply('Invalid quantity. Please provide a positive number.');
+    // Validate amount
+    if (amount <= 0) {
+      await interaction.reply({ content: 'Amount must be greater than 0.', ephemeral: true });
+      return;
     }
 
-    try {
-      // In a real application, you would interact with your backend here
-      // to execute the sell order.
-      // This is a placeholder for the actual trading logic.
-      console.log(`Simulating sell order: Sell ${quantity} ${symbol}`);
-      ctx.reply(`Simulating selling ${quantity} ${symbol}. Order placed.`);
-    } catch (error) {
-      console.error('Error placing sell order:', error);
-      ctx.reply('Failed to place sell order. Please try again later.');
-    }
+    // Placeholder for sell order placement logic (using validated inputs)
+    await interaction.reply(`Placing sell order for ${amount} ${tokenPair}.`);
   },
 };
