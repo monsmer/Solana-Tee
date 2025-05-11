@@ -1,49 +1,14 @@
 // bot/commands/limit_order.js
-const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('limit_order')
-    .setDescription('Places a limit order for Solana tokens.')
-    .addStringOption(option =>
-      option.setName('token_pair')
-        .setDescription('The token pair to trade (e.g., SOL/USDC)')
-        .setRequired(true)
-    )
-    .addNumberOption(option =>
-      option.setName('amount')
-        .setDescription('The amount of tokens to buy/sell')
-        .setRequired(true)
-    )
-    .addNumberOption(option =>
-      option.setName('price')
-        .setDescription('The limit price for the order')
-        .setRequired(true)
-    ),
-  async execute(interaction) {
-    const tokenPair = interaction.options.getString('token_pair');
-    const amount = interaction.options.getNumber('amount');
-    const price = interaction.options.getNumber('price');
-
-    // Validate token pair (basic check)
-    if (!tokenPair.includes('/')) {
-      await interaction.reply({ content: 'Invalid token pair format. Use format SOL/USDC.', ephemeral: true });
-      return;
+  name: 'limit_order',
+  description: 'Place a limit order.',
+  async execute(ctx, quantity, price, symbol) {
+    if (!quantity || !price || !symbol) {
+      return ctx.reply('Usage: /limit_order [quantity] [price] [SOL]');
     }
 
-    // Validate amount
-    if (amount <= 0) {
-      await interaction.reply({ content: 'Amount must be greater than 0.', ephemeral: true });
-      return;
-    }
-
-    // Validate price
-    if (price <= 0) {
-      await interaction.reply({ content: 'Price must be greater than 0.', ephemeral: true });
-      return;
-    }
-
-    // Placeholder for limit order placement logic (using validated inputs)
-    await interaction.reply(`Placing limit order for ${amount} ${tokenPair} at price ${price}.`);
+    // Mock limit order placement (replace with actual Solana limit order logic)
+    ctx.reply(`Limit order placed for ${quantity} ${symbol} at price ${price}.`);
   },
 };
