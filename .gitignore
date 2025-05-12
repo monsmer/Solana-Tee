@@ -1,7 +1,10 @@
-node_modules
+node_modules/
 .env
+config/.env
+mini-app/.env
+private_doc/
+.DS_Store
 
 private_doc/*
-.DS_Store
 *.pyc
 __pycache__/
